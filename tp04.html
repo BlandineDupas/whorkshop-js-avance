@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>workshop-js</title>
+</head>
+<body>
+    <nav>
+        <a href="tp01.html">
+            <li>TP 01 - Les fonctions</li>
+        </a>
+        <a href="tp02.html">
+            <li>TP 02 - Les tableaux</li>
+        </a>
+        <a href="tp03.html">
+            <li>TP 03 - Programmation orientée objet</li>
+        </a>
+        <a href="tp04.html">
+            <li>TP 04 - Recherche de villes</li>
+        </a>
+    </nav>
+    <h1>TP 04 - Recherche de villes</h1>
+
+    <main>
+        <section>
+            <h2>Recherche de ville</h2>
+            <form id="citySearch">
+                <div>
+                    <label for="cityName">Nom de ville</label>
+                    <input type="text" name="cityName" id="cityName">
+                </div>
+                <div>
+                    <label for="postcode">Code Postal</label>
+                    <input type="number" name="postcode" id="postcode">
+                </div>
+                <div>
+                    <label for="departmentNb">Numéro de département</label>
+                    <input type="number" name="departmentNb" id="departmentNb">
+                </div>
+
+                <div>
+                    <button type="submit">Rechercher</button>
+                </div>
+            </form>
+            <aside>
+                <div id="citySearchResult"></div>
+                <button type="submit" id="loadMoreCities">Afficher plus...</button>
+            </aside>
+        </section>
+        <section>
+            <h2>Liste utilisateur</h2>
+            <button type="button">Rafraîchir</button>
+        </section>
+    </main>
+
+
+    <script src="js/tp04.js"></script>
+</body>
+</html>
