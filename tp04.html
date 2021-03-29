@@ -50,8 +50,40 @@
             </aside>
         </section>
         <section>
-            <h2>Liste utilisateur</h2>
-            <button type="button">Rafraîchir</button>
+            <h2>Liste des pays</h2>
+            <button type="button" id="countryList">Lancer</button>
+            <aside>
+                <div id="countryListResult"></div>
+                <button type="submit" id="loadMoreCountries">Afficher plus...</button>
+            </aside>
+        </section>
+        <section>
+            <h2>Liste des régions françaises</h2>
+            <button type="button" id="regionList">Lancer</button>
+            <aside>
+                <div id="regionListResult"></div>
+                <button type="submit" id="loadMoreRegions">Afficher plus...</button>
+            </aside>
+        </section>
+        <section>
+            <h2>Recherche de département</h2>
+            <form id="departmentSearch">
+                <div>
+                    <label for="departmentName">Nom de département</label>
+                    <input type="text" name="departmentName" id="departmentName">
+                </div>
+                <div>
+                    <label for="regionCode">Code Postal</label>
+                    <input type="number" name="regionCode" id="regionCode">
+                </div>
+                <div>
+                    <button type="submit">Rechercher</button>
+                </div>
+            </form>
+            <aside>
+                <div id="departmentSearchResult"></div>
+                <button type="submit" id="loadMoreDepartments">Afficher plus...</button>
+            </aside>
         </section>
     </main>
 
