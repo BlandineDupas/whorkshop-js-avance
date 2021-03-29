@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>workshop-js</title>
+    <link rel="stylesheet" href="css/tp04.css">
+    <title>Recherche de villes</title>
 </head>
 <body>
     <nav>
@@ -24,6 +25,7 @@
     <h1>TP 04 - Recherche de villes</h1>
 
     <main>
+        <!-- Villes -->
         <section>
             <h2>Recherche de ville</h2>
             <form id="citySearch">
@@ -39,32 +41,41 @@
                     <label for="departmentNb">Numéro de département</label>
                     <input type="number" name="departmentNb" id="departmentNb">
                 </div>
-
                 <div>
                     <button type="submit">Rechercher</button>
                 </div>
             </form>
             <aside>
-                <div id="citySearchResult"></div>
-                <button type="submit" id="loadMoreCities">Afficher plus...</button>
+                <h4>Résultats</h4>
+                <div id="citySearchResult" class="resultList"></div>
+                <button type="button" id="loadMoreCities" class="d-none">Afficher plus...</button>
             </aside>
         </section>
+        <!-- Pays -->
         <section>
             <h2>Liste des pays</h2>
-            <button type="button" id="countryList">Lancer</button>
+            <div>
+                <button type="button" id="countryList">Afficher la liste des pays</button>
+            </div>
             <aside>
-                <div id="countryListResult"></div>
-                <button type="submit" id="loadMoreCountries">Afficher plus...</button>
+                <h4>Résultats</h4>
+                <div id="countryListResult" class="resultList"></div>
+                <button type="button" id="loadMoreCountries" class="d-none">Afficher plus...</button>
             </aside>
         </section>
+        <!-- Régions -->
         <section>
             <h2>Liste des régions françaises</h2>
-            <button type="button" id="regionList">Lancer</button>
+            <div>
+                <button type="button" id="regionList">Afficher la liste des régions</button>
+            </div>
             <aside>
-                <div id="regionListResult"></div>
-                <button type="submit" id="loadMoreRegions">Afficher plus...</button>
+                <h4>Résultats</h4>
+                <div id="regionListResult" class="resultList"></div>
+                <button type="button" id="loadMoreRegions" class="d-none">Afficher plus...</button>
             </aside>
         </section>
+        <!-- Départements -->
         <section>
             <h2>Recherche de département</h2>
             <form id="departmentSearch">
@@ -81,8 +92,9 @@
                 </div>
             </form>
             <aside>
-                <div id="departmentSearchResult"></div>
-                <button type="submit" id="loadMoreDepartments">Afficher plus...</button>
+                <h4>Résultats</h4>
+                <div id="departmentSearchResult" class="resultList"></div>
+                <button type="button" id="loadMoreDepartments" class="d-none">Afficher plus...</button>
             </aside>
         </section>
     </main>

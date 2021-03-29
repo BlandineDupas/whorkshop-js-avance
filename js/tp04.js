@@ -17,6 +17,7 @@ loadMoreCities.addEventListener('click', () => displayResult(citysearchResult, c
 function submitCityForm (evt) {
     cityArray = [];
     citysearchResult.innerHTML = '';
+    cityFormErrors = [];
     evt.preventDefault();
     let searchParams = '';
     
@@ -31,6 +32,7 @@ function submitCityForm (evt) {
     if (cityFormErrors.length > 0) {
         cityFormErrors.forEach(error => {
             let newLi = document.createElement('li');
+            newLi.classList.add('error');
             newLi.textContent = error;
             citysearchResult.appendChild(newLi);
         })
@@ -95,6 +97,7 @@ async function searchCity(searchParams) {
     .then((json) => {
         json.results.forEach(element => cityArray.push({'nom': element.ville, 'code': element.cp}))
         displayResult(citysearchResult, cityArray);
+        loadMoreCities.classList.remove('d-none');
     })
     .catch(error => console.log('Request Failed : ', error));
 }
@@ -104,16 +107,21 @@ async function searchCity(searchParams) {
 // ----------------
 const launchCountrySearch = document.getElementById('countryList');
 const countryResult = document.getElementById('countryListResult');
+const loadMoreCountries = document.getElementById('loadMoreCountries');
 let countryArray = [];
 launchCountrySearch.addEventListener('click', searchCountry);
+loadMoreCountries.addEventListener('click', () => displayResult(countryResult, countryArray, countryResult.childElementCount))
 
 async function searchCountry() {
+    countryArray = [];
+    countryResult.innerHTML = '';
 
     await fetch('http://www.citysearch-api.com/fr/pays?login=en-deplacement.fr&apikey=so80c85d87dd9158545e74ac49711a659f8f665568')
     .then(response => response.json())
     .then((json) => {
         json.results.forEach(element => countryArray.push({'nom': element.pays, 'code': element.code}))
         displayResult(countryResult, countryArray);
+        loadMoreCountries.classList.remove('d-none');
     })
     .catch(error => console.log('Request Failed : ', error));
 }
@@ -123,16 +131,21 @@ async function searchCountry() {
 // ----------------
 const launchRegionSearch = document.getElementById('regionList');
 const regionResult = document.getElementById('regionListResult');
+const loadMoreRegions = document.getElementById('loadMoreRegions');
 let regionArray = [];
 launchRegionSearch.addEventListener('click', searchRegion);
+loadMoreRegions.addEventListener('click', () => displayResult(regionResult, regionArray, regionResult.childElementCount))
 
 async function searchRegion() {
+    regionArray = [];
+    regionResult.innerHTML = '';
 
     await fetch('http://www.citysearch-api.com/fr/region?login=en-deplacement.fr&apikey=so80c85d87dd9158545e74ac49711a659f8f665568')
     .then(response => response.json())
     .then((json) => {
         json.results.forEach(element => regionArray.push({'nom': element.rg, 'code': element.code}))
         displayResult(regionResult, regionArray);
+        loadMoreRegions.classList.remove('d-none');
     })
     .catch(error => console.log('Request Failed : ', error));
 }
@@ -151,6 +164,7 @@ loadMoreDepartments.addEventListener('click', () => displayResult(departmentsear
 function submitDepartmentForm (evt) {
     departmentArray = [];
     departmentsearchResult.innerHTML = '';
+    departmentErrors = [];
     evt.preventDefault();
     let searchParams = '';
     
@@ -163,6 +177,7 @@ function submitDepartmentForm (evt) {
     if (departmentErrors.length > 0) {
         departmentErrors.forEach(error => {
             let newLi = document.createElement('li');
+            newLi.classList.add('error');
             newLi.textContent = error;
             departmentsearchResult.appendChild(newLi);
         })
@@ -202,6 +217,7 @@ async function searchDepartment(searchParams) {
     .then((json) => {
         json.results.forEach(element => departmentArray.push({'nom': element.dp, 'code': element.cp}))
         displayResult(departmentsearchResult, departmentArray);
+        loadMoreDepartments.classList.remove('d-none');
     })
     .catch(error => console.log('Request Failed : ', error));
 }
