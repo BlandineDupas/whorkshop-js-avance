@@ -52,24 +52,40 @@ function checkCityName(cityName) {
     }
 }
 
-function checkPostcode(postcode) {
+function checkPostcode(postcode, dynamic = false) {
+    let errorArray;
+    if (dynamic) {
+        errorArray = dynamicErrors;
+    } else {
+        errorArray = cityFormErrors;
+    }
+
     if (postcode) {
         if (isNaN(postcode)) {
-            cityFormErrors.push('Le code postal doit être un nombre')
+            errorArray.push('Le code postal doit être un nombre')
         } else if (postcode.length > 5) {
-            cityFormErrors.push('Le code postal ne peut pas faire plus de 5 chiffres')
-        } else {
+            errorArray.push('Le code postal ne peut pas faire plus de 5 chiffres')
+        } else if (!dynamic) {
             return '&cp=' + postcode;
+        } else {
+            return postcode;
         }
     }
 }
 
-function checkDepartmentNb(departmentNb) {
+function checkDepartmentNb(departmentNb, dynamic = false) {
+    let errorArray;
+    if (dynamic) {
+        errorArray = dynamicErrors;
+    } else {
+        errorArray = cityFormErrors;
+    }
+    
     if (departmentNb) {
         if (isNaN(departmentNb)) {
-            cityFormErrors.push('Le numéro de département doit être un nombre')
+            errorArray.push('Le numéro de département doit être un nombre')
         } else if (departmentNb.length > 2) {
-            cityFormErrors.push('Le numéro de département ne peut pas faire plus de 5 chiffres')
+            errorArray.push('Le numéro de département ne peut pas faire plus de 5 chiffres')
         } else {
             return '&dp=' + departmentNb;
         }
@@ -91,13 +107,18 @@ const displayResult = (DOMTarget, dataArray, start = 0) => {
     }
 }
 
-async function searchCity(searchParams) {
+async function searchCity(searchParams, dynamic = false) {
     await fetch('http://www.citysearch-api.com/fr/city?login=en-deplacement.fr&apikey=so80c85d87dd9158545e74ac49711a659f8f665568' + searchParams)
     .then(response => response.json())
     .then((json) => {
-        json.results.forEach(element => cityArray.push({'nom': element.ville, 'code': element.cp}))
-        displayResult(citysearchResult, cityArray);
-        loadMoreCities.classList.remove('d-none');
+        if (!dynamic) {
+            json.results.forEach(element => cityArray.push({'nom': element.ville, 'code': element.cp}))
+            displayResult(citysearchResult, cityArray);
+            loadMoreCities.classList.remove('d-none');
+        } else {
+            json.results.forEach(element => dynamicCityArray.push({'nom': element.ville, 'code': element.cp}))
+            loadCityOptions();
+        }
     })
     .catch(error => console.log('Request Failed : ', error));
 }
@@ -187,10 +208,17 @@ function submitDepartmentForm (evt) {
 
 }
 
-function checkDepartmentName(departmentName) {
+function checkDepartmentName(departmentName, dynamic = false) {
+    let errorArray;
+    if (dynamic) {
+        errorArray = dynamicErrors;
+    } else {
+        errorArray = departmentErrors;
+    }
+    
     if (departmentName) {
         if (!departmentName.match(/^[a-zA-Z]+( |-[a-zA-Z]+)*$/)) {
-            departmentErrors.push('Le nom de département doit être écrit en lettres, avec éventuellement des tirets ou des espaces');
+            errorArray.push('Le nom de département doit être écrit en lettres, avec éventuellement des tirets ou des espaces');
         } else {
             return '&dp=' + departmentName.toLowerCase();
         }        
@@ -209,15 +237,83 @@ function checkRegionCode(regionCode) {
     }
 }
 
-async function searchDepartment(searchParams) {
+async function searchDepartment(searchParams, dynamic = false) {
     // rg  (int) => code region
     // dp (string) => nom departement
     await fetch('http://www.citysearch-api.com/fr/departement?login=en-deplacement.fr&apikey=so80c85d87dd9158545e74ac49711a659f8f665568' + searchParams)
     .then(response => response.json())
     .then((json) => {
-        json.results.forEach(element => departmentArray.push({'nom': element.dp, 'code': element.cp}))
-        displayResult(departmentsearchResult, departmentArray);
-        loadMoreDepartments.classList.remove('d-none');
+        if (!dynamic) {
+            json.results.forEach(element => departmentArray.push({'nom': element.dp, 'code': element.cp}))
+            displayResult(departmentsearchResult, departmentArray);
+            loadMoreDepartments.classList.remove('d-none');
+        } else {
+            json.results.forEach(element => dynamicDepartmentArray.push({'nom': element.dp, 'code': element.cp}))
+            loadDepartmentsOptions();
+        }
     })
     .catch(error => console.log('Request Failed : ', error));
+}
+
+// ----------------
+// Recherche Dynamique
+// ----------------
+const dynamicSearchForm = document.getElementById('dynamicSearch');
+const dynamicsearchResult = document.getElementById('dynamicSearchResult');
+const dynamicSubmit = document.getElementById('dynamicSubmit');
+// const loadMoreDepartments = document.getElementById('loadMoreDepartments');
+let dynamicDepartmentArray = [];
+let dynamicCityArray = [];
+let dynamicErrors = [];
+dynamicSearchForm.addEventListener('submit', submitDynamicForm);
+// loadMoreDepartments.addEventListener('click', () => displayResult(departmentsearchResult, departmentArray, departmentsearchResult.childElementCount))
+
+function submitDynamicForm (evt) {
+    dynamicDepartmentArray = [];
+    dynamicsearchResult.innerHTML = '';
+    dynamicErrors = [];
+    evt.preventDefault();
+    let searchParams = '';
+    
+    let departmentParam = checkDepartmentName(document.getElementById('dynamicDepartmentName').value, true);
+    let departmentCode = checkDepartmentNb(document.getElementById('selectDepartment').value, true);
+    let postcode = checkPostcode(document.getElementById('selectCity').value, true);
+
+    if (postcode) {
+        let cityName = document.getElementById('selectCity').querySelector('option:checked').textContent;
+        // afficher le code postal de la ville
+        let newP = document.createElement('p');
+        newP.textContent = 'Le code postal de ' + cityName + ' est : ' + postcode + '.'
+        dynamicsearchResult.appendChild(newP);
+    } else if (departmentCode) {
+        searchParams += departmentCode;
+        searchCity(searchParams, true);
+        dynamicSubmit.textContent = 'Obtenir le code postal';
+    } else if (departmentParam) {
+        searchParams += departmentParam;
+        searchDepartment(searchParams, true);
+    }
+    
+}
+
+function loadDepartmentsOptions () {
+    let selectDepartment = document.getElementById('selectDepartment');
+    selectDepartment.parentNode.classList.remove('d-none');
+    dynamicDepartmentArray.forEach(department => {
+        let newOption = document.createElement('option');
+        newOption.textContent =  department.nom;
+        newOption.setAttribute('value', department.code)
+        selectDepartment.appendChild(newOption);
+    })
+}
+
+function loadCityOptions () {
+    let selectCity = document.getElementById('selectCity');
+    selectCity.parentNode.classList.remove('d-none');
+    dynamicCityArray.forEach(ville => {
+        let newOption = document.createElement('option');
+        newOption.textContent =  ville.nom;
+        newOption.setAttribute('value', ville.code)
+        selectCity.appendChild(newOption);
+    })
 }

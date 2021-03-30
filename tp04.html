@@ -84,7 +84,7 @@
                     <input type="text" name="departmentName" id="departmentName">
                 </div>
                 <div>
-                    <label for="regionCode">Code Postal</label>
+                    <label for="regionCode">Numéro de région</label>
                     <input type="number" name="regionCode" id="regionCode">
                 </div>
                 <div>
@@ -97,6 +97,33 @@
                 <button type="button" id="loadMoreDepartments" class="d-none">Afficher plus...</button>
             </aside>
         </section>
+        <section>
+            <h2>Recherche dynamique</h2>
+            <h3>Obtenir le code postal d'une ville en cherchant par département :</h3>
+            <form id="dynamicSearch">
+                <div>
+                    <label for="dynamicDepartmentName">Nom de département</label>
+                    <input type="text" name="dynamicDepartmentName" id="dynamicDepartmentName">
+                </div>
+                <div class="d-none">
+                    <label for="selectDepartment">Choisissez le département</label>
+                    <select name="selectDepartment" id="selectDepartment"></select>
+                </div>
+                <div class="d-none">
+                    <label for="selectCity">Ville</label>
+                    <select name="selectCity" id="selectCity"></select>
+                </div>
+                <div>
+                    <button type="submit" id="dynamicSubmit">Continuer</button>
+                </div>
+            </form>
+            <aside>
+                <h4>Résultats</h4>
+                <div id="dynamicSearchResult" class="resultList"></div>
+            </aside>
+
+        </section>
+
     </main>
 
 
