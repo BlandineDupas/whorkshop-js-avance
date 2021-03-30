@@ -172,13 +172,14 @@ async function searchRegion(formNb = false) {
     .then(response => response.json())
     .then((json) => {
         json.results.forEach(element => regionArray.push({'nom': element.rg, 'code': element.code}))
-        if (!formNb) {
-            displayResult(regionResult, regionArray);
-            loadMoreRegions.classList.remove('d-none');
-        } else if (formNb === 3) {
+        if (formNb === 3) {
             json.results.forEach(region => {
                 searchDepartment('&rg=' + region.code, 3)
             })
+        } else {
+            displayResult(regionResult, regionArray);
+            loadMoreRegions.classList.remove('d-none');
+            console.log(regionArray)
         }
     })
     .catch(error => console.log('Request Failed : ', error));
@@ -328,7 +329,11 @@ function loadCityOptions (selectId, dataArray) {
     selectCity.parentNode.classList.remove('d-none');
     dataArray.forEach(ville => {
         let newOption = document.createElement('option');
-        newOption.textContent =  ville.nom + ' - ' + ville.code;
+        if (selectId === 'selectCity') {
+            newOption.textContent =  ville.nom;
+        } else {
+            newOption.textContent =  ville.nom + ' - ' + ville.code;
+        }
         newOption.setAttribute('value', ville.code)
         selectCity.appendChild(newOption);
     })
@@ -372,17 +377,14 @@ function submitRegionForm (evt) {
 }
 
 function determineCityRegion () {
-    // console.log(regionSearchDepartmentArray)
-    // console.log(regionArray)
-
     let postcode = checkPostcode(document.getElementById('regionSearch--selectCity').value, 3);
     let department = regionSearchDepartmentArray.filter(item => item.code == postcode.slice(0, 2));
     cityData.departmentName = department[0].nom;
     cityData.departmentNb = department[0].code;
     cityData.regionNb = department[0].rg;
-
     cityData.regionName = regionArray.find(region => region.code == cityData.regionNb).nom;
+    
     let newP = document.createElement('p');
-    newP.innerHTML = '<strong>' + cityData.cityName + '</strong></br>Département : ' + cityData.departmentName + ' (' + cityData.departmentNb + ')</br>Région : ' + cityData.regionName + '.'
+    newP.innerHTML = '<strong>' + cityData.cityName + '</strong></br>Département : ' + cityData.departmentName + ' (' + cityData.departmentNb + ')</br>Région : ' + cityData.regionName;
     regionSearchResult.appendChild(newP);
 }
