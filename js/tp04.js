@@ -108,6 +108,14 @@ const displayResult = (DOMTarget, dataArray, start = 0) => {
         let newP = document.createElement('p');
         newP.textContent = dataArray[i].nom;
         DOMTarget.appendChild(newP);
+        if (dataArray === countryArray) {
+            let newSpan = document.createElement('span');
+            newSpan.classList.add('d-none');
+            newSpan.textContent = ' - ' +dataArray[i].code;
+            newP.appendChild(newSpan);
+            newP.addEventListener('mouseover', displayCountryCode);
+            newP.addEventListener('mouseout', displayCountryCode);
+        }
     }
 }
 
@@ -154,6 +162,9 @@ async function searchCountry() {
     .catch(error => console.log('Request Failed : ', error));
 }
 
+function displayCountryCode (evt) {
+    evt.target.querySelector('span').classList.toggle('d-none');
+}
 // ----------------
 // REGION
 // ----------------
