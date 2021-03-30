@@ -42,44 +42,48 @@ function submitCityForm (evt) {
 
 }
 
-function checkCityName(cityName) {
+function checkCityName(cityName, formNb = 0) {
+    let errorArray = chooseErrorArray(formNb);
+
     if (cityName) {
         if (!cityName.match(/^[a-zA-Z]+( |-[a-zA-Z]+)*$/)) {
-            cityFormErrors.push('Le nom de ville doit être écrit en lettres, avec éventuellement des tirets ou des espaces');
+            errorArray.push('Le nom de ville doit être écrit en lettres, avec éventuellement des tirets ou des espaces');
         } else {
             return '&ville=' + cityName.toLowerCase();
         }        
     }
 }
 
-function checkPostcode(postcode, dynamic = false) {
-    let errorArray;
-    if (dynamic) {
-        errorArray = dynamicErrors;
-    } else {
-        errorArray = cityFormErrors;
+function chooseErrorArray(formNb) {
+    if (formNb === 0) {
+        return cityFormErrors;
+    } else if (formNb === 1) {
+        return departmentErrors;
+    } else if (formNb === 2) {
+        return dynamicErrors;
+    }else if (formNb === 3) {
+        return regionFormErrors;
     }
+}
+
+function checkPostcode(postcode, formNb = 0) {
+    let errorArray = chooseErrorArray(formNb);
 
     if (postcode) {
         if (isNaN(postcode)) {
             errorArray.push('Le code postal doit être un nombre')
         } else if (postcode.length > 5) {
             errorArray.push('Le code postal ne peut pas faire plus de 5 chiffres')
-        } else if (!dynamic) {
-            return '&cp=' + postcode;
-        } else {
+        } else if (formNb === 2 || formNb === 3) {
             return postcode;
+        } else {
+            return '&cp=' + postcode;
         }
     }
 }
 
-function checkDepartmentNb(departmentNb, dynamic = false) {
-    let errorArray;
-    if (dynamic) {
-        errorArray = dynamicErrors;
-    } else {
-        errorArray = cityFormErrors;
-    }
+function checkDepartmentNb(departmentNb, formNb = 0) {
+    let errorArray = chooseErrorArray(formNb);
     
     if (departmentNb) {
         if (isNaN(departmentNb)) {
@@ -107,17 +111,20 @@ const displayResult = (DOMTarget, dataArray, start = 0) => {
     }
 }
 
-async function searchCity(searchParams, dynamic = false) {
+async function searchCity(searchParams, formNb = 0) {
     await fetch('http://www.citysearch-api.com/fr/city?login=en-deplacement.fr&apikey=so80c85d87dd9158545e74ac49711a659f8f665568' + searchParams)
     .then(response => response.json())
     .then((json) => {
-        if (!dynamic) {
+        if (formNb === 0) {
             json.results.forEach(element => cityArray.push({'nom': element.ville, 'code': element.cp}))
             displayResult(citysearchResult, cityArray);
             loadMoreCities.classList.remove('d-none');
-        } else {
+        } else if (formNb === 2) {
             json.results.forEach(element => dynamicCityArray.push({'nom': element.ville, 'code': element.cp}))
-            loadCityOptions();
+            loadCityOptions('selectCity', dynamicCityArray);
+        } else if (formNb === 3) {
+            json.results.forEach(element => regionSearchCityArray.push({'nom': element.ville, 'code': element.cp}))
+            loadCityOptions('regionSearch--selectCity', regionSearchCityArray);
         }
     })
     .catch(error => console.log('Request Failed : ', error));
@@ -157,7 +164,7 @@ let regionArray = [];
 launchRegionSearch.addEventListener('click', searchRegion);
 loadMoreRegions.addEventListener('click', () => displayResult(regionResult, regionArray, regionResult.childElementCount))
 
-async function searchRegion() {
+async function searchRegion(formNb = false) {
     regionArray = [];
     regionResult.innerHTML = '';
 
@@ -165,8 +172,14 @@ async function searchRegion() {
     .then(response => response.json())
     .then((json) => {
         json.results.forEach(element => regionArray.push({'nom': element.rg, 'code': element.code}))
-        displayResult(regionResult, regionArray);
-        loadMoreRegions.classList.remove('d-none');
+        if (!formNb) {
+            displayResult(regionResult, regionArray);
+            loadMoreRegions.classList.remove('d-none');
+        } else if (formNb === 3) {
+            json.results.forEach(region => {
+                searchDepartment('&rg=' + region.code, 3)
+            })
+        }
     })
     .catch(error => console.log('Request Failed : ', error));
 }
@@ -208,13 +221,8 @@ function submitDepartmentForm (evt) {
 
 }
 
-function checkDepartmentName(departmentName, dynamic = false) {
-    let errorArray;
-    if (dynamic) {
-        errorArray = dynamicErrors;
-    } else {
-        errorArray = departmentErrors;
-    }
+function checkDepartmentName(departmentName, formNb = 1) {
+    let errorArray = chooseErrorArray(formNb);
     
     if (departmentName) {
         if (!departmentName.match(/^[a-zA-Z]+( |-[a-zA-Z]+)*$/)) {
@@ -237,19 +245,25 @@ function checkRegionCode(regionCode) {
     }
 }
 
-async function searchDepartment(searchParams, dynamic = false) {
+async function searchDepartment(searchParams, formNb = 1) {
     // rg  (int) => code region
     // dp (string) => nom departement
     await fetch('http://www.citysearch-api.com/fr/departement?login=en-deplacement.fr&apikey=so80c85d87dd9158545e74ac49711a659f8f665568' + searchParams)
     .then(response => response.json())
     .then((json) => {
-        if (!dynamic) {
+        if (formNb === 1) {
             json.results.forEach(element => departmentArray.push({'nom': element.dp, 'code': element.cp}))
             displayResult(departmentsearchResult, departmentArray);
             loadMoreDepartments.classList.remove('d-none');
-        } else {
+        } else if (formNb === 2) {
             json.results.forEach(element => dynamicDepartmentArray.push({'nom': element.dp, 'code': element.cp}))
-            loadDepartmentsOptions();
+            loadDepartmentsOptions('selectDepartment', dynamicDepartmentArray);
+        } else if (formNb === 3) {
+            json.results.forEach(element => regionSearchDepartmentArray.push({'nom': element.dp, 'code': element.cp, 'rg': searchParams.slice(4)}))
+            regionCount++;
+            if (regionCount === 13) { // quand toutes les régions ont chargé leurs départements
+                determineCityRegion();
+            }
         }
     })
     .catch(error => console.log('Request Failed : ', error));
@@ -261,59 +275,114 @@ async function searchDepartment(searchParams, dynamic = false) {
 const dynamicSearchForm = document.getElementById('dynamicSearch');
 const dynamicsearchResult = document.getElementById('dynamicSearchResult');
 const dynamicSubmit = document.getElementById('dynamicSubmit');
-// const loadMoreDepartments = document.getElementById('loadMoreDepartments');
 let dynamicDepartmentArray = [];
 let dynamicCityArray = [];
 let dynamicErrors = [];
 dynamicSearchForm.addEventListener('submit', submitDynamicForm);
-// loadMoreDepartments.addEventListener('click', () => displayResult(departmentsearchResult, departmentArray, departmentsearchResult.childElementCount))
 
 function submitDynamicForm (evt) {
     dynamicDepartmentArray = [];
     dynamicsearchResult.innerHTML = '';
     dynamicErrors = [];
     evt.preventDefault();
-    let searchParams = '';
     
-    let departmentParam = checkDepartmentName(document.getElementById('dynamicDepartmentName').value, true);
-    let departmentCode = checkDepartmentNb(document.getElementById('selectDepartment').value, true);
-    let postcode = checkPostcode(document.getElementById('selectCity').value, true);
+    let departmentParam = checkDepartmentName(document.getElementById('dynamicDepartmentName').value, 2);
+    let departmentCode = checkDepartmentNb(document.getElementById('selectDepartment').value, 2);
+    let postcode = checkPostcode(document.getElementById('selectCity').value, 2);
 
-    if (postcode) {
+    if (dynamicErrors.length > 0) {
+        dynamicErrors.forEach(error => {
+            let newLi = document.createElement('li');
+            newLi.classList.add('error');
+            newLi.textContent = error;
+            dynamicsearchResult.appendChild(newLi);
+        })
+    } else if (postcode) {
         let cityName = document.getElementById('selectCity').querySelector('option:checked').textContent;
         // afficher le code postal de la ville
         let newP = document.createElement('p');
         newP.textContent = 'Le code postal de ' + cityName + ' est : ' + postcode + '.'
         dynamicsearchResult.appendChild(newP);
     } else if (departmentCode) {
-        searchParams += departmentCode;
-        searchCity(searchParams, true);
+        searchCity(departmentCode, 2);
         dynamicSubmit.textContent = 'Obtenir le code postal';
     } else if (departmentParam) {
-        searchParams += departmentParam;
-        searchDepartment(searchParams, true);
+        searchDepartment(departmentParam, 2);
     }
     
 }
 
-function loadDepartmentsOptions () {
-    let selectDepartment = document.getElementById('selectDepartment');
+function loadDepartmentsOptions (selectId, dataArray) {
+    let selectDepartment = document.getElementById(selectId);
     selectDepartment.parentNode.classList.remove('d-none');
-    dynamicDepartmentArray.forEach(department => {
+    dataArray.forEach(department => {
         let newOption = document.createElement('option');
-        newOption.textContent =  department.nom;
+        newOption.textContent =  department.nom + ' - ' + department.code;
         newOption.setAttribute('value', department.code)
         selectDepartment.appendChild(newOption);
     })
 }
 
-function loadCityOptions () {
-    let selectCity = document.getElementById('selectCity');
+function loadCityOptions (selectId, dataArray) {
+    let selectCity = document.getElementById(selectId);
     selectCity.parentNode.classList.remove('d-none');
-    dynamicCityArray.forEach(ville => {
+    dataArray.forEach(ville => {
         let newOption = document.createElement('option');
-        newOption.textContent =  ville.nom;
+        newOption.textContent =  ville.nom + ' - ' + ville.code;
         newOption.setAttribute('value', ville.code)
         selectCity.appendChild(newOption);
     })
+}
+
+// ----------------
+// Recherche Dynamique 2
+// ----------------
+const regionSearchForm = document.getElementById('regionSearch');
+const regionSearchResult = document.getElementById('regionSearchResult');
+let regionSearchCityArray = [];
+let regionSearchDepartmentArray = [];
+let cityDepartment = {};
+let cityData = {};
+let regionFormErrors = [];
+let regionCount = 0;
+regionSearchForm.addEventListener('submit', submitRegionForm);
+
+function submitRegionForm (evt) {
+    regionSearchResult.innerHTML = '';
+    regionFormErrors = [];
+    evt.preventDefault();
+
+    let cityParam = checkCityName(document.getElementById('regionSearch--cityName').value, 3);
+    let postcode = checkPostcode(document.getElementById('regionSearch--selectCity').value, 3);
+
+    if (regionFormErrors.length > 0) {
+        regionFormErrors.forEach(error => {
+            let newLi = document.createElement('li');
+            newLi.classList.add('error');
+            newLi.textContent = error;
+            regionSearchResult.appendChild(newLi);
+        })
+    } else if (postcode) {
+        cityData.cityName = document.getElementById('regionSearch--selectCity').querySelector('option:checked').textContent.split(' ')[0];
+        cityData.postcode = postcode;
+        searchRegion(3);
+    } else if (cityParam) {
+        searchCity(cityParam, 3);
+    } 
+}
+
+function determineCityRegion () {
+    // console.log(regionSearchDepartmentArray)
+    // console.log(regionArray)
+
+    let postcode = checkPostcode(document.getElementById('regionSearch--selectCity').value, 3);
+    let department = regionSearchDepartmentArray.filter(item => item.code == postcode.slice(0, 2));
+    cityData.departmentName = department[0].nom;
+    cityData.departmentNb = department[0].code;
+    cityData.regionNb = department[0].rg;
+
+    cityData.regionName = regionArray.find(region => region.code == cityData.regionNb).nom;
+    let newP = document.createElement('p');
+    newP.innerHTML = '<strong>' + cityData.cityName + '</strong></br>Département : ' + cityData.departmentName + ' (' + cityData.departmentNb + ')</br>Région : ' + cityData.regionName + '.'
+    regionSearchResult.appendChild(newP);
 }
